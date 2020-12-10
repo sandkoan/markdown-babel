@@ -28,23 +28,28 @@ def validate_paths(args) -> list:
 
 
 def process(name: str, interpreter: str, shortcode: str):
+    file = open(name)
+    text = file.read()
+    file.close()
 
-    with open(name) as f:
-        hunks: list = []
-        mini_lines: list = []
-        is_code: bool = False
-
-        for i in f.readlines():
-            if (i == f"```{shortcode}") or (i == f"~~~{shortcode}"):
-                is_code = True
-            if is_code and (i != "```" or i != "~~~"):
-                mini_lines.append(i)
+    fulltext = []
+    isCode = False
+    phrase = ""
+    acceptableCodeRanges = ["`", "~"]
+    for i in range(len(text)):
+        if text[i-1] in acceptableCodeRanges and text[i-2] in acceptableCodeRanges and text[i-3] in acceptableCodeRanges:
+            if code:
+                code = False
+                fulltext.append(phrase) 
+                phrase = ""
             else:
-                hunks.append(mini_lines)
-                mini_lines.clear()
-                is_code = False
-
-        print(hunks)
+                code = True
+                fulltext.append(phrase[:-3])
+                phrase = "```"
+        phrase += text[i]
+        i += 1
+    fulltext.append(phrase)
+    print(fulltext)
 
 
 def main():
