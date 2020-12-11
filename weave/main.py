@@ -1,10 +1,12 @@
 import argparse
 import os
 import re
+import subprocess
 
 # Configuration
 
-extension: str = "py"
+interpreter: str = "python3"
+shortcode: str = "python"
 
 
 def get_args():
@@ -13,6 +15,7 @@ def get_args():
     args = parser.parse_args()
 
     return args
+
 
 def validate_paths(args) -> list:
     for file_name in args.file_names:
@@ -24,17 +27,52 @@ def validate_paths(args) -> list:
 
     return args.file_names
 
+def tempCreate(str)->None:
+    with open("temp.py", "w") as t:
+        t.write(str)
+
+
+def process(name: str, interpreter: str, shortcode: str):
+    file = open(name)
+    text = file.read()
+    file.close()
+
+    fulltext = []
+    isCode = False
+    phrase = ""
+    acceptableCodeRanges = ["`", "~"]
+    for i in range(len(text)):
+        if text[i-1] in acceptableCodeRanges and text[i-2] in acceptableCodeRanges and text[i-3] in acceptableCodeRanges:
+            if isCode:
+                isCode = False
+                fulltext.append(phrase) 
+                phrase = ""
+            else:
+                isCode = True
+                fulltext.append(phrase[:-3])
+                phrase = "```"
+        phrase += text[i]
+        i += 1
+    fulltext.append(phrase)
+    print(fulltext)
+
+    # for val in fulltext:
+    #     if val[0] == "`":
+    #         tempCreate(val[val.index("\n"):-3])
+    #         print(subprocess.check_output(['python3', 'temp.py']))
+    #         break
+            
+
 
 def main():
     files = validate_paths(get_args())
 
-    for name in files:
-        f = open(name)
-        text = f.read()
-        f.close()
-        
+    process(files[0], interpreter, shortcode)
+    # complete_list = [process(name, interpreter, shortcode) for name in files]
+
+    # for l in complete_list:
+    #     for z in l:
+    #         print(z)
 
 
-
-if __name__ == "__main__":
-    main()
+main()
